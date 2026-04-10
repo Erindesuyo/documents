@@ -1,0 +1,92 @@
+body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #DDEBF7; /* 연한 하늘색 배경 */
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    text-align: center;
+    width: 100%;
+}
+
+h1 { 
+    font-weight: bold;
+    margin-bottom: 30px;
+}
+
+.captcha-box {
+    background-color: #94A6B5; /* 회색 박스 */
+    width: 400px;
+    margin: 0 auto;
+    padding: 30px;
+    text-align: left;
+}
+
+#step-counter {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.image-area {
+    background-color: white;
+    border: 2px solid black;
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.image-area img {
+    max-width: 90%;
+    max-height: 90%;
+}
+
+
+#user-input {
+    flex-grow: 1;
+    border: none;
+    padding: 10px;
+    font-size: 1rem;
+    outline: none;
+}
+
+#go-btn {
+    background-color: black;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#go-btn:hover {
+    background-color: #333;
+}
+
+/* 화면 너비가 480px 이하일 때 적용되는 스타일 (핸드폰용) */
+@media (max-width: 480px) {
+    .captcha-box {
+        width: 90%; /* 고정 너비 대신 화면의 90% 사용 */
+        padding: 20px;
+        margin: 0 10px;
+    }
+
+    h1 {
+        font-size: 1.5rem; /* 제목 크기를 살짝 줄임 */
+        margin-bottom: 20px;
+    }
+
+    .image-area {
+        height: 80px; /* 이미지 영역 높이 조절 */
+    }
+
+    #user-input, #go-btn {
+        font-size: 1rem;
+        padding: 12px; /* 터치하기 편하게 패딩을 늘림 */
+    }
+}

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subversive - Document</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 기본 스타일 */
+        .doc-body { background-color: #fff; overflow-y: auto; margin: 0; overflow-x: hidden;}
+        .back-nav { position: fixed; top: 30px; left: 30px; cursor: pointer; font-weight: bold; z-index: 1000; background: rgba(255,255,255,0.8); padding: 5px;}
+        
+        /* Intro Section 스타일 */
+        .intro-section { height: 100vh; display: flex; justify-content: center; align-items: center; }
+
+        /* --- Intro 등장 애니메이션 --- */
+        .definition-box {
+            border-left: 10px solid #000;
+            padding: 20px 40px;
+            max-width: 600px;
+            opacity: 0; /* 초기 상태 투명 */
+            transform: translateX(-20px);
+            animation: introReveal 1s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+            animation-delay: 0.2s;
+        }
+
+        .definition-box h2 { 
+            overflow: hidden; /* 글자가 밑에서 올라오게 하기 위해 필요 */
+        }
+
+        .definition-box h2 span {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(100%);
+            animation: titleSlide 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation-delay: 0.5s;
+        }
+
+        @keyframes introReveal {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes titleSlide {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Scroll Section 스타일 */
+        .scroll-section { 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            opacity: 0; 
+            transform: translateY(50px);
+            transition: all 1.2s ease; /* 서서히 나타나는 효과 */
+        }
+        .scroll-section.active { 
+            opacity: 1; 
+            transform: translateY(0);
+        }
+        
+        .photo-frame { width: 70%; max-width: 800px; margin-bottom: 20px; overflow: hidden; }
+        .photo-frame img { width: 100%; display: block; filter: grayscale(100%); }
+        .desc-text { width: 70%; max-width: 800px; background: #000; color: #fff; padding: 20px; box-sizing: border-box; }
+
+        /* --- [수정] CAPTCHA STREAM SECTION 스타일 --- */
+        .captcha-stream-section {
+            min-height: 250vh; /* 스크롤 길이를 더 충분히 확보 (이미지 분산을 위해) */
+            position: relative;
+            background-color: #fff;
+            /* [수정] 상단 패딩을 대폭 늘려 전체적으로 더 아래쪽에서 시작하게 함 */
+            padding: 400px 0 100px 0; 
+            overflow: hidden; /* 이미지가 화면 가로 밖으로 나가는 것 방지 */
+        }
+
+        #captcha-stream-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        /* 나타날 개별 이미지 박스 스타일 */
+        .floating-captcha {
+            position: absolute;
+            width: 250px; /* 이미지 박스 기본 너비 */
+            padding: 15px;
+            background: #000; /* 검은색 배경 */
+            opacity: 0; /* 초기 상태 투명 */
+            transform: translateY(30px) scale(0.9); /* 살짝 아래, 작게 시작 */
+            transition: opacity 1.5s ease, transform 1.2s ease; /* 서서히 나타나는 효과 */
+            z-index: 5;
+            will-change: transform, opacity; /* 최적화 */
+        }
+
+        .floating-captcha img {
+            width: 100%;
+            display: block;
+            filter: grayscale(100%) invert(1); /* 이미지를 흑백 반전하여 '전복' 느낌 강조 */
+        }
+
+        /* 서서히 나타나는 클래스 (JS로 추가) */
+        .floating-captcha.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1) rotate(var(--rand-rotate)); /* 원래 크기, 회전 적용 */
+        }
+
+    </style>
+</head>
+<body class="doc-body">
+    <div class="back-nav" onclick="location.href='index.html'">← Back</div>
+
+    <section class="intro-section">
+        <div class="definition-box">
+            <h2 style="font-size: 3rem; margin: 0;"><span>Subversive</span></h2>
+            <p style="font-style: italic;">Trying to destroy or damage something, especially an established political system.</p>
+            <p>전복적인: 기존의 체제, 질서, 사상 등을 뒤집거나 무너뜨리려는 의도.</p>
+        </div>
+    </section>
+
+    <section class="scroll-section">
+        <div class="photo-frame">
+            <img src="captcha.png">
+        </div>
+        <div class="desc-text">
+            <strong>Breaking the Rules</strong><br><br>
+            <em>Prove you are human by identifying the subversion.</em>
+        </div>
+    </section>
+
+    <section class="captcha-stream-section">
+        <div id="captcha-stream-container">
+            </div>
+    </section>
+
+    <script>
+        // --- 기존 IntersectionObserver 로직 ---
+        const generalObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('active');
+            });
+        }, { threshold: 0.3 });
+
+        document.querySelectorAll('.scroll-section').forEach(section => generalObserver.observe(section));
+
+
+        // --- [수정] 랜덤 CAPTCHA STREAM 로직 ---
+
+        const streamContainer = document.getElementById('captcha-stream-container');
+        // 나타날 이미지 소스 배열 (실제 이미지 파일명으로 변경하세요)
+        // 간격을 더 잘 벌리기 위해 이미지를 몇 개 더 추가하는 것을 추천합니다. (현재 8개)
+        const captchaImages = [
+            '캡챠/captcha1.png', '캡챠/captcha2.png', '캡챠/captcha3.png', '캡챠/captcha4.png',
+            '캡챠/captcha5.png', '캡챠/captcha6.png', '캡챠/captcha7.png', '캡챠/captcha8.png'
+            , '캡챠/captcha10.png', '캡챠/captcha11.png', '캡챠/captcha12.png', '캡챠/captcha13.png',
+
+        ];
+        let currentImageIndex = 0;
+        let streamStarted = false;
+
+        // 이미지를 랜덤하게 생성하여 배치하는 함수
+        function placeAndRevealCaptcha() {
+            if (currentImageIndex >= captchaImages.length) return; // 모든 이미지가 다 나왔으면 종료
+
+            const captchaWrap = document.createElement('div');
+            captchaWrap.className = 'floating-captcha';
+
+            const img = document.createElement('img');
+            img.src = captchaImages[currentImageIndex]; // 이미지 경로 설정
+            img.alt = `Subversive CAPTCHA ${currentImageIndex + 1}`;
+
+            captchaWrap.appendChild(img);
+
+            // --- [수정 포인트] 뭉치지 않게 간격을 벌려서 배치하는 로직 ---
+
+            // 1. 가로 배치 (기존 랜덤 유지)
+            const containerWidth = streamContainer.offsetWidth;
+            const boxWidth = 280; // 박스 너비(250) + 여백
+            const randX = Math.random() * (containerWidth - boxWidth);
+
+            // 2. [핵심 수정] 세로 배치 - 뭉치지 않게 순차적으로 아래로 내림
+            // 전체 가용 세로 높이를 이미지 개수로 나누어 각 이미지의 '영역'을 지정
+            // min-height: 250vh를 기준으로 이미지들이 분산되도록 함.
+            const totalStreamHeight = window.innerHeight * 2; // 대략적인 가용 스크롤 높이 (2vh)
+            const numImages = captchaImages.length;
+            
+            // 이미지 간의 대략적인 수직 간격
+            const verticalStep = totalStreamHeight / numImages;
+            
+            // 현재 이미지의 기준 세로 위치 (순서대로 아래로 내림)
+            const baseTop = currentImageIndex * verticalStep;
+            
+            // 기준 위치에서 약간의 랜덤 변위 추가 (너무 일직선으로 보이지 않게)
+            // 박스 세로 높이(대략 200px)를 고려하여 여백 설정
+            const randY = baseTop + (Math.random() * (verticalStep - 200));
+
+            // 랜덤 회전 각도 (-20도 ~ 20도)
+            const randRotate = (Math.random() - 0.5) * 40; 
+
+            // 스타일 적용
+            captchaWrap.style.left = `${randX}px`;
+            captchaWrap.style.top = `${randY}px`;
+            // CSS 변수로 랜덤 회전값 전달
+            captchaWrap.style.setProperty('--rand-rotate', `${randRotate}deg`);
+
+            streamContainer.appendChild(captchaWrap);
+
+            // 살짝 지연 후 visible 클래스를 추가하여 서서히 나타나게 함
+            setTimeout(() => {
+                captchaWrap.classList.add('visible');
+            }, 100);
+
+            currentImageIndex++;
+
+            // 일정 시간 뒤 다음 이미지 생성 (하나 둘 서서히 나타나는 효과)
+            if (currentImageIndex < captchaImages.length) {
+                // 간격을 느끼도록 나타나는 시간차를 살짝 조절 가능 (현재 1.2초)
+                setTimeout(placeAndRevealCaptcha, 1200); 
+            }
+        }
+
+        // 스크롤 감지 Observer (Captcha Stream 전용)
+        const streamObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                // 해당 섹션이 화면에 보이기 시작하면 스트림 시작 (한 번만 실행)
+                if (entry.isIntersecting && !streamStarted) {
+                    streamStarted = true;
+                    placeAndRevealCaptcha();
+                    // 스트림 시작 후 오차범위를 줄이기 위해 빠르게 감시 해제
+                    streamObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.05 }); // 섹션이 조금이라도 보이면 더 빠르게 시작하도록 임계값 낮춤
+
+        if (streamContainer) {
+            // .captcha-stream-section 전체를 감시하여 상단 패딩 영역부터 스크롤을 인식하게 함
+            streamObserver.observe(document.querySelector('.captcha-stream-section'));
+        }
+    </script>
+</body>
+</html>

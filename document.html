@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinity - Document</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="infinity-style.css">
+    <style>
+        .doc-body { background-color: #fff; overflow-y: auto; margin: 0; }
+        .back-nav { position: fixed; top: 30px; left: 30px; cursor: pointer; font-weight: bold; z-index: 1000; }
+
+        .definition-box h2 {
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin: 0 0 24px 0;
+            color: #111;
+        }
+        .definition-box p {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: #444;
+            margin: 0 0 8px 0;
+        }
+        
+        .intro-section { 
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            text-align: center;
+            background: #fff; /* 배경을 다시 흰색으로 설정 */
+            position: relative;
+            z-index: 10;
+        }
+        
+        .scroll-section { 
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            opacity: 0; 
+            transform: translateY(50px); 
+            transition: all 0.8s ease; 
+            background-color: white; 
+            position: relative;
+            z-index: 20;
+        }
+        .scroll-section.active { opacity: 1; transform: translateY(0); }
+        .content-box { display: flex; width: 80%; max-width: 1000px; gap: 40px; align-items: center; }
+        .image-box { flex: 1; height: 500px; display: flex; justify-content: center; align-items: center; background: #f9f9f9; }
+        .text-box { flex: 1; font-size: 1.1rem; line-height: 1.6; }
+    </style>
+</head>
+<body class="doc-body">
+    <div class="back-nav" onclick="location.href='index.html'">← Back</div>
+
+    <section class="intro-section">
+        <div class="definition-box fade-in-up">
+            <h2>Infinity</h2>
+            <p>1. The state or quality of being infinite.</p>
+            <p>2. 무한: 수, 양, 공간, 시간 따위에 제한이나 끝이 없음.</p>
+        </div>
+    </section>
+
+    <section class="scroll-section">
+        <div class="content-box">
+            <div class="image-box"><img src="viewpoint2.png" alt="Infinity Image 1" style="width: 100%; height: 100%; object-fit: cover;"></div>
+            <div class="text-box">
+                <strong>Library Of Babel </strong><br>
+                The Library of Babel symbolizes infinite truths that we cannot attain. 
+                Although humans can never reach the end, they do not give up and strive
+                 to find meaning within it. Ultimately, this space serves as a stage 
+                 that visually demonstrates 'the fate of humans living today yearning 
+                 for the impossible.'
+            </div>
+        </div>
+    </section>
+
+    <section class="scroll-section">
+        <div class="content-box" style="flex-direction: row-reverse;">
+            <div class="image-box"><img src="viewpoint.png" alt="Infinity Image 1" style="width: 100%; height: 100%; object-fit: cover;"></div>
+            <div class="text-box">
+                <strong>Progress</strong><br>
+                The space was implemented using Blender and Three.js. Users can freely explore the space.
+            </div>
+        </div>
+    </section>
+
+    <section class="typing-section">
+        <div id="babel-text"></div>
+    </section>
+
+    <script>
+        // 배경색 변경 로직 (기존 유지)
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            const windowHeight = window.innerHeight;
+            const body = document.body;
+            if (scrollY > windowHeight * 0.5) {
+                body.classList.add('dark-mode');
+            } else {
+                body.classList.remove('dark-mode');
+            }
+        });
+
+        // 섹션 나타나기 효과 (기존 유지)
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('active');
+            });
+        }, { threshold: 0.2 });
+        document.querySelectorAll('.scroll-section').forEach(section => observer.observe(section));
+
+        // [추가] 바벨의 도서관 랜덤 타이핑 로직
+        const babelTextContainer = document.getElementById('babel-text');
+        const chars = "abcdefghijklmnopqrstuvwxyz, ."; // 소설 속 25개의 기호 컨셉
+        let typingInterval;
+
+        function startBabelTyping() {
+            if (typingInterval) return;
+            typingInterval = setInterval(() => {
+                const randomChar = chars.charAt(Math.floor(Math.random() * chars.length));
+                babelTextContainer.innerText += randomChar;
+                
+                // 스크롤을 자동으로 아래로 밀어주어 계속 써지는 느낌 강조 (선택 사항)
+                // window.scrollTo(0, document.body.scrollHeight);
+            }, 20); // 타이핑 속도 (낮을수록 빠름)
+        }
+
+        // 타이핑 섹션이 보이면 시작
+        const typingObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) startBabelTyping();
+            });
+        }, { threshold: 0.1 });
+        typingObserver.observe(document.querySelector('.typing-section'));
+    </script>
+</body>
+</html>

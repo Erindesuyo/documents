@@ -1,0 +1,61 @@
+/* 중앙 정의 박스 강조 */
+.definition-box {
+    position: relative;
+    z-index: 10;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: none;
+    padding: 50px 60px;
+    max-width: 600px;
+    border-radius: 4px;
+    opacity: 0; /* 초기 상태 투명 */
+}
+
+/* 정의 박스 등장 애니메이션 */
+.definition-box.fade-in-up {
+    animation: fadeInUp 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+    animation-delay: 0.3s;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+        letter-spacing: 0.05em;
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        letter-spacing: normal;
+    }
+}
+
+/* 기존 스타일 하단에 추가 */
+
+.typing-section {
+    min-height: 100vh;
+    padding: 60px 40px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    z-index: 30;
+    position: relative;
+    background: transparent !important;
+}
+
+#babel-text {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    word-break: break-all; /* 가로가 꽉 차면 무조건 줄바꿈 */
+    color: #111;
+    transition: color 0.5s ease;
+    width: 100%;
+    white-space: pre-wrap; /* 공백 유지 */
+}
+
+/* 다크모드일 때 글자색 변경 */
+.doc-body.dark-mode #babel-text {
+    color: rgba(255, 255, 255, 0.8);
+}
